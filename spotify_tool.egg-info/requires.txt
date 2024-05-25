@@ -1,0 +1,5 @@
+flask
+spotipy
+html5lib
+pandas
+pathlib

@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: spotify-tool
+Version: 1.0
+Summary: an app for me to retreieving user spotify data and analyzing it
+Author: Ricky Lin
+Requires-Dist: flask
+Requires-Dist: spotipy
+Requires-Dist: html5lib
+Requires-Dist: pandas
+Requires-Dist: pathlib
