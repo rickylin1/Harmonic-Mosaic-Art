@@ -13,8 +13,8 @@ app.secret_key = "ONcs92894hfnl"
 app.config['SESSION_COOKIE_NAME'] = 'Rickys cookie'
 TOKEN_INFO = "token_info"
 
-if __name__ == '__main__':
-    app.run(debug = True)
+# if __name__ == '__main__':
+#     app.run(debug = True)
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
@@ -35,9 +35,11 @@ def redirectPage():
     access_token = sp_oauth.get_access_token(code)
     session[TOKEN_INFO] = access_token
     # return redirect(url_for('getTracks', _external = True))
-    return redirect(url_for('get20TopArtists', _external = True))
+    # return redirect(url_for('addSongToQueue', _external = True))
+    return redirect(url_for('audio_features', _external = True))
+    # return redirect(url_for('SimilarSongs', _external = True))
+    # return redirect(url_for('get20TopArtists', _external = True))
     # return 'redirect'
-
 @app.route('/getTracks')
 def getTracks():
     try:
@@ -50,6 +52,150 @@ def getTracks():
     current_track = sp.current_user_playing_track()
     formatted_info = format_currently_playing_track(current_track)
     return formatted_info
+
+#return song id given a query
+def search_song(query):
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    result = sp.search(q = query, type = 'track', limit = 1)
+    if result['tracks']['items']:
+        track = result['tracks']['items'][0]
+        track_id = track['id']
+        track_name = track['name']
+        return track_id, track_name
+        return f"Track ID: {track_id}, Track Name: {track_name}"
+    else:
+        return "No results found"
+    
+#return artist id given a query
+def search_artist(query):
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    result = sp.search(q = query, type = 'artist', limit = 1)
+    if result['artists']['items']:
+        artist = result['artists']['items'][0]
+        artist_id = artist['id']
+        artist_name = artist['name']
+        return artist_id, artist_name;
+        return f"Artist ID: {artist_id}, Artist Name: {artist_name}"
+    else:
+        return "No results found"
+
+def get_album_id(query):
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    results = sp.search(q=query, limit=1, type='album')
+    print('test')
+    print('test')
+    print('test')
+    print(str(type(results)))
+    print(results['albums']['items'][0]['id'])
+
+    # album_list = []
+    # for album in results['albums']['items']:
+    #     album_info = {
+    #         'name': album['name'],
+    #         'artist': album['artists'][0]['name'],
+    #         'release_date': album['release_date']
+    #         # Add more fields as needed
+    #     }
+    #     album_list.append(album_info)
+    
+    return results['albums']['items'][0]['id']
+
+def get_album_tracks(album_id):
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    tracks = sp.album_tracks(album_id)
+    return tracks
+
+#POTENTIAL, TAKE AN ARTIST OR ALBUM AND RANDOMLY SHUFFLE SONGS INTO QUEUE??
+@app.route('/addSongToQueue')
+def addSongToQueue():
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    songid, songname = search_song('track:Unwritten artist:Natasha Bedingfield')
+    sp.add_to_queue(uri = songid)
+    return f"Song: {songname} has been added to the queue."
+
+@app.route('/SimilarSongs')
+def SimilarSongs():
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    artist_id, artist_name= search_artist(query = 'artist:aespa')
+    related_artists = sp.artist_related_artists(artist_id)
+    return f"related artists to {artist_name} are {related_artists}"
+
+@app.route('/audio_analysis')
+def audio_analysis():
+    try:
+        token_info = get_token()
+    except:
+        print("User not logged in")
+        return redirect(url_for("login", _external=True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    
+    song_id, song_name = search_song('track:Trap Queen artist:Fetty Wap')
+
+    sp.add_to_queue(uri = song_id)
+    
+
+    analysis = sp.audio_analysis(song_id)
+    
+
+    return analysis
+
+
+@app.route('/audio_features')
+def audio_features():
+    try:
+        token_info = get_token()
+    except:
+        print("User not logged in")
+        return redirect(url_for("login", _external=True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    album_id = get_album_id('album%3ARodeo%20artist%3ATravis%20Scott')
+    album = get_album_tracks(album_id)
+    print('yoyo')
+    print(type(album))
+
+    track_ids = [track['id'] for track in album['items']]
+    analysis = sp.audio_features(track_ids)
+    for track_id in track_ids:
+        sp.add_to_queue(track_id)
+
+    return analysis
 
 @app.route('/get20TopArtists')
 def get20TopArtists():
@@ -152,6 +298,8 @@ def create_spotify_oath():
         client_id=client_id, 
         client_secret= client_secret, 
         redirect_uri= url_for('redirectPage', _external = True),
-         scope="user-library-read user-top-read user-read-currently-playing")
+         scope="user-library-read user-top-read user-read-currently-playing user-modify-playback-state")
 
 
+if __name__ == '__main__':
+    app.run(debug = True)
