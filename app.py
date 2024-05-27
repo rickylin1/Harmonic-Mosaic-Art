@@ -1,4 +1,4 @@
-from flask import Flask, request, url_for, session, redirect
+from flask import Flask, request, url_for, session, redirect, jsonify
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import os
@@ -7,6 +7,7 @@ import time
 
 #NOTE for some reason must do flask run, cannot just run 
 #next to-do is to add automatic refresh so that I don't have to automatically refresh everytime
+#also reduce inefficiencies by removing duplication?
 
 app = Flask(__name__)
 app.secret_key = "ONcs92894hfnl"
@@ -35,10 +36,18 @@ def redirectPage():
     access_token = sp_oauth.get_access_token(code)
     session[TOKEN_INFO] = access_token
     # return redirect(url_for('getTracks', _external = True))
-    # return redirect(url_for('addSongToQueue', _external = True))
-    return redirect(url_for('audio_features', _external = True))
+    return redirect(url_for('addSongToQueue', _external = True))
+    # return redirect(url_for('audio_features', _external = True))
+    # return redirect(url_for('Pause', _external = True))
+    # return redirect(url_for('Resume', _external = True))
+    # return redirect(url_for('Previous', _external = True))
+    # return redirect(url_for('Next', _external = True))
+    # return redirect(url_for('CreatePlaylist', _external = True))
     # return redirect(url_for('SimilarSongs', _external = True))
     # return redirect(url_for('get20TopArtists', _external = True))
+    return redirect(url_for('get20TopTracks', _external = True))
+    ##for top tracks and artists can specify a time range as well
+
     # return 'redirect'
 @app.route('/getTracks')
 def getTracks():
@@ -52,6 +61,91 @@ def getTracks():
     current_track = sp.current_user_playing_track()
     formatted_info = format_currently_playing_track(current_track)
     return formatted_info
+
+
+@app.route('/Pause')
+def Pause():
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    sp.pause_playback()
+    return 'paused'
+
+
+def AddSongToPlaylist(playlistid):
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    trackid, trackname = search_song('track:Unwritten artist:Natasha Bedingfield')
+    userprofile = sp.current_user()
+    userid = userprofile['id']
+    sp.user_playlist_add_tracks(user = userid, playlist_id=playlistid, tracks = [trackid])
+    return 'added songs'
+    
+
+
+@app.route('/CreatePlaylist')
+def CreatePlaylist():
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    name = "a test playlist"
+    userprofile = sp.current_user()
+    userid = userprofile['id']
+    playlist = sp.user_playlist_create(user = userid, name = "a test", public = False)
+    id = playlist['id']
+    AddSongToPlaylist(id)
+
+    return 'created playlist'
+
+@app.route('/Resume')
+def Resume():
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    sp.start_playback()
+    return 'start'
+
+@app.route('/Previous')
+def Previous():
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    sp.previous_track()
+    return 'prev'
+
+
+@app.route('/Next')
+def Next():
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    sp.next_track()
+    return 'next'
 
 #return song id given a query
 def search_song(query):
@@ -129,6 +223,10 @@ def get_album_tracks(album_id):
     return tracks
 
 #POTENTIAL, TAKE AN ARTIST OR ALBUM AND RANDOMLY SHUFFLE SONGS INTO QUEUE??
+# @app.route('/NewReleases')
+# def NewReleases():
+
+
 @app.route('/addSongToQueue')
 def addSongToQueue():
     try:
@@ -138,7 +236,8 @@ def addSongToQueue():
         return redirect(url_for("login", _external = True))
 
     sp = spotipy.Spotify(auth=token_info['access_token'])
-    songid, songname = search_song('track:Unwritten artist:Natasha Bedingfield')
+    # songid, songname = search_song('track:Unwritten artist:Natasha Bedingfield')
+    songid, songname = search_song('Unwritten Natasha Bedingfield')
     sp.add_to_queue(uri = songid)
     return f"Song: {songname} has been added to the queue."
 
@@ -209,6 +308,27 @@ def get20TopArtists():
     top_artists = sp.current_user_top_artists(limit=50, offset = 0)['items'][0:50]
     format_top_artists(top_artists)
     return "hi"
+
+@app.route('/get20TopTracks')
+def get20TopTracks():
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect(url_for("login", _external = True))
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    top_tracks = sp.current_user_top_tracks(limit=20, offset=0)['items']
+    formatted_tracks = []
+    for track in top_tracks:
+        formatted_track = {
+            'name': track['name'],
+            'artist': track['artists'][0]['name'],
+            'uri': track['uri']
+        }
+        formatted_tracks.append(formatted_track)
+
+    return jsonify(formatted_tracks)
 
 def format_top_artists(top_artists):
     for artist in top_artists:
@@ -298,7 +418,7 @@ def create_spotify_oath():
         client_id=client_id, 
         client_secret= client_secret, 
         redirect_uri= url_for('redirectPage', _external = True),
-         scope="user-library-read user-top-read user-read-currently-playing user-modify-playback-state")
+         scope="user-library-read user-top-read user-read-currently-playing user-modify-playback-state playlist-modify-private" )
 
 
 if __name__ == '__main__':
