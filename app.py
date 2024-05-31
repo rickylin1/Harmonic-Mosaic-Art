@@ -4,6 +4,8 @@ from spotipy.oauth2 import SpotifyOAuth
 import os
 from dotenv import load_dotenv
 import time
+import json
+import csv
 
 #NOTE for some reason must do flask run, cannot just run 
 #next to-do is to add automatic refresh so that I don't have to automatically refresh everytime
@@ -21,6 +23,22 @@ load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 
+def json_to_csv(json_data, csv_file_name):
+    csv_file = csv_file_name
+    with open(csv_file_name, mode='w', newline='') as file:
+        # Create a CSV writer
+        writer = csv.writer(file)
+        
+        # Write the header
+        header = json_data[0].keys()
+        writer.writerow(header)
+        
+        # Write the data rows
+        for item in json_data:
+            writer.writerow(item.values())
+
+
+
 
 @app.route('/')
 def login():
@@ -36,7 +54,7 @@ def redirectPage():
     access_token = sp_oauth.get_access_token(code)
     session[TOKEN_INFO] = access_token
     # return redirect(url_for('getTracks', _external = True))
-    return redirect(url_for('addSongToQueue', _external = True))
+    # return redirect(url_for('addSongToQueue', _external = True))
     # return redirect(url_for('audio_features', _external = True))
     # return redirect(url_for('Pause', _external = True))
     # return redirect(url_for('Resume', _external = True))
@@ -45,7 +63,7 @@ def redirectPage():
     # return redirect(url_for('CreatePlaylist', _external = True))
     # return redirect(url_for('SimilarSongs', _external = True))
     # return redirect(url_for('get20TopArtists', _external = True))
-    return redirect(url_for('get20TopTracks', _external = True))
+    return redirect(url_for('get50TopTracks', _external = True))
     ##for top tracks and artists can specify a time range as well
 
     # return 'redirect'
@@ -294,6 +312,10 @@ def audio_features():
     for track_id in track_ids:
         sp.add_to_queue(track_id)
 
+    json_to_csv(analysis, "./data/audiofeatures.csv")
+
+    
+
     return analysis
 
 @app.route('/get20TopArtists')
@@ -307,10 +329,11 @@ def get20TopArtists():
     sp = spotipy.Spotify(auth=token_info['access_token'])
     top_artists = sp.current_user_top_artists(limit=50, offset = 0)['items'][0:50]
     format_top_artists(top_artists)
+    json_to_csv(top_artists, "./data/topArtists.csv")
     return "hi"
 
-@app.route('/get20TopTracks')
-def get20TopTracks():
+@app.route('/get50TopTracks')
+def get50TopTracks():
     try:
         token_info = get_token()
     except:
@@ -318,7 +341,7 @@ def get20TopTracks():
         return redirect(url_for("login", _external = True))
 
     sp = spotipy.Spotify(auth=token_info['access_token'])
-    top_tracks = sp.current_user_top_tracks(limit=20, offset=0)['items']
+    top_tracks = sp.current_user_top_tracks(limit=50, offset=0)['items']
     formatted_tracks = []
     for track in top_tracks:
         formatted_track = {
@@ -328,6 +351,7 @@ def get20TopTracks():
         }
         formatted_tracks.append(formatted_track)
 
+    json_to_csv(top_tracks, "./data/topTracks.csv")
     return jsonify(formatted_tracks)
 
 def format_top_artists(top_artists):
