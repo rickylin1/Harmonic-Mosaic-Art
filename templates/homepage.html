@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+</head>
+<body>
+    <h1>Current Functionalities</h1>
+    <ul>
+        <li><a href="{{ url_for('Pause') }}">Pause</a></li>
+        <li><a href="{{ url_for('Resume') }}">Resume</a></li>
+        <li><a href="{{ url_for('Previous') }}">Previous</a></li>
+        <li><a href="{{ url_for('Next') }}">Next</a></li>
+        <li><a href="{{ url_for('getCurrentTrack') }}">Current Song</a></li>
+        <li><a href="{{ url_for('addSongToQueue') }}">Add Song to Queue</a></li>
+        <li id="topArtists"><a href="{{ url_for('get50TopArtists') }}">50 Top Artists</a></li>
+        <li><a href="{{ url_for('get50TopTracks') }}">50 Top Tracks</a></li>
+        <!-- Add links to other routes here as needed -->
+    </ul>
+
+    <script src = "script.js">
+//         document.addEventListener('DOMContentLoaded', function () {
+//     // Fetch top artists data from the server
+//     fetch('/get50TopArtists')
+//         .then(response => response.json())
+//         .then(data => {
+//             console.log(data);
+//             const newDiv = document.createElement('div');
+//             newDiv.textContent = 'new div'; // Corrected 'textcontent' to 'textContent'
+
+//             data.forEach(entry => {
+//                 // Create an image element for each entry
+//                 const img = document.createElement('img');
+//                 img.src = entry.image_url; // Assuming 'image_url' is the key for the image URL in your dictionary
+
+//                 // Append the image to the newDiv
+//                 newDiv.appendChild(img);
+//             });
+//             document.body.appendChild(newDiv);
+//         })
+//         .catch(error => {
+//             console.error('Error fetching top artists:', error);
+//         });
+// });
+
+    </script>
+    
+</body>
+</html>
+
