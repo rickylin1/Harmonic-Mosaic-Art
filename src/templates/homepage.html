@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+</head>
+<body>
+    <h1>Current Functionalities</h1>
+    <button id="pauseButton">Pause</button>
+    <div id="pauseResult"></div>
+
+    <button id="resumeButton">Resume</button>
+    <div id="resumeResult"></div>    
+
+    <button id="previousButton">Previous</button>
+    <div id="previousResult"></div>    
+
+    <button id="nextButton">Next</button>
+    <div id="nextResult"></div>
+    
+    <ul>
+        <li><a href="{{ url_for('getCurrentTrack') }}">Current Song</a></li>
+        <li><a href="{{ url_for('addSongToQueue') }}">Add Song to Queue</a></li>
+        <li id="topArtists"><a href="{{ url_for('get50TopArtists') }}">50 Top Artists</a></li>
+        <li><a href="{{ url_for('get50TopTracks') }}">50 Top Tracks</a></li>
+        <!-- Add links to other routes here as needed -->
+    </ul>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
+</body>
+</html>
+

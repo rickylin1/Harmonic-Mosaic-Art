@@ -1,4 +1,5 @@
 from flask import Flask, request, url_for, session, redirect, jsonify, render_template
+from flask_cors import CORS, cross_origin
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import os
@@ -8,6 +9,7 @@ import json
 import csv
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = "ONcs92894hfnl"
 app.config['SESSION_COOKIE_NAME'] = 'Rickys cookie'
 TOKEN_INFO = "token_info"
@@ -191,6 +193,39 @@ def redirectPage():
     session[TOKEN_INFO] = access_token
     return redirect(url_for('getCurrentTrack', _external = True))
 
+#playback features
+@app.route('/Pause')
+def Pause():
+    sp = get_spotify()
+    if sp is None:
+        return redirect(url_for("login", _external=True))
+    sp.pause_playback()
+    return jsonify({"data": "successful pause"})
+
+@app.route('/Resume')
+def Resume():
+    sp = get_spotify()
+    if sp is None:
+        return redirect(url_for("login", _external=True))
+    sp.start_playback()
+    return jsonify({"data": "successful resume"})
+
+@app.route('/Previous')
+def Previous():
+    sp = get_spotify()
+    if sp is None:
+        return redirect(url_for("login", _external=True))
+    sp.previous_track()
+    return jsonify({"data": "successful prev"})
+
+@app.route('/Next')
+def Next():
+    sp = get_spotify()
+    if sp is None:
+        return redirect(url_for("login", _external=True))
+    sp.next_track()
+    return jsonify({"data": "successful next"})
+
 @app.route('/getCurrentTrack')
 def getCurrentTrack():
     sp = get_spotify()
@@ -200,15 +235,23 @@ def getCurrentTrack():
     formatted_info = format_currently_playing_track(current_track)
     return formatted_info
 
-
-@app.route('/Pause')
-def Pause():
+@app.route('/addSongToQueue')
+def addSongToQueue():
     sp = get_spotify()
     if sp is None:
         return redirect(url_for("login", _external=True))
-    sp.pause_playback()
-    return 'paused'
+    songid, songname = search_song('track:Unwritten artist:Natasha Bedingfield')
+    sp.add_to_queue(uri = songid)
+    return f"Song: {songname} has been added to the queue."
 
+@app.route('/SimilarSongs')
+def SimilarSongs():
+    sp = get_spotify()
+    if sp is None:
+        return redirect(url_for("login", _external=True))
+    artist_id, artist_name= search_artist(query = 'artist:aespa')
+    related_artists = sp.artist_related_artists(artist_id)
+    return f"related artists to {artist_name} are {related_artists}"
 
 def AddSongToPlaylist(playlistid):
     sp = get_spotify()
@@ -234,48 +277,6 @@ def CreatePlaylist():
 
     return 'created playlist'
 
-@app.route('/Resume')
-def Resume():
-    sp = get_spotify()
-    if sp is None:
-        return redirect(url_for("login", _external=True))
-    sp.start_playback()
-    return 'start'
-
-@app.route('/Previous')
-def Previous():
-    sp = get_spotify()
-    if sp is None:
-        return redirect(url_for("login", _external=True))
-    sp.previous_track()
-    return 'prev'
-
-
-@app.route('/Next')
-def Next():
-    sp = get_spotify()
-    if sp is None:
-        return redirect(url_for("login", _external=True))
-    sp.next_track()
-    return 'next'
-
-@app.route('/addSongToQueue')
-def addSongToQueue():
-    sp = get_spotify()
-    if sp is None:
-        return redirect(url_for("login", _external=True))
-    songid, songname = search_song('track:Unwritten artist:Natasha Bedingfield')
-    sp.add_to_queue(uri = songid)
-    return f"Song: {songname} has been added to the queue."
-
-@app.route('/SimilarSongs')
-def SimilarSongs():
-    sp = get_spotify()
-    if sp is None:
-        return redirect(url_for("login", _external=True))
-    artist_id, artist_name= search_artist(query = 'artist:aespa')
-    related_artists = sp.artist_related_artists(artist_id)
-    return f"related artists to {artist_name} are {related_artists}"
 
 @app.route('/audio_analysis')
 def audio_analysis():

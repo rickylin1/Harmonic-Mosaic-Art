@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    "a test"
+</body>
+
+<script>
+    //THE PURPOSE OF THIS IS TO TEST WHEN CORS WILL GIVE ME AN ERROR, IT WILL WHEN THE HTML IS NOT CONNECTED TO MY FLASK APPLICATION
+    async function fetchData() {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/Pause');
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        const data = await response.json();
+        console.log('data')
+        return data;
+    } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+    }
+}
+
+    fetchData()
+    console.log('bob')
+
+</script>
+</html>
