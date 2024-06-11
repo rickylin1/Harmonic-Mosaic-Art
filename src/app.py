@@ -233,7 +233,7 @@ def getCurrentTrack():
         return redirect(url_for("login", _external=True))
     current_track = sp.current_user_playing_track()
     formatted_info = format_currently_playing_track(current_track)
-    return formatted_info
+    return jsonify({"data": formatted_info})
 
 @app.route('/addSongToQueue')
 def addSongToQueue():
@@ -318,7 +318,10 @@ def get50TopArtists():
     sp = get_spotify()
     if sp is None:
         return redirect(url_for("login", _external=True))
+    #a list of dictionaries is returned
+
     top_artists = sp.current_user_top_artists(limit=50, offset = 0)['items'][0:50]
+    
     formatted_artists = []
     for artist in top_artists:
         image_data = artist.get('images', [])  # Get the list of images or an empty list if not available
@@ -329,9 +332,9 @@ def get50TopArtists():
             'image_url': image_url  # Include the image URL in the formatted data
         }
         formatted_artists.append(formatted_artist)
-    
+
     json_to_csv(top_artists, "./data/topTracks.csv")
-    return jsonify(formatted_artists)
+    return jsonify({'data': formatted_artists})
 
 @app.route('/get50TopTracks')
 def get50TopTracks():
@@ -349,7 +352,7 @@ def get50TopTracks():
         formatted_tracks.append(formatted_track)
 
     json_to_csv(top_tracks, "./data/topTracks.csv")
-    return jsonify(formatted_tracks)
+    return jsonify({'data': formatted_tracks})
 
 def format_top_artists(top_artists):
     for artist in top_artists:
