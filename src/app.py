@@ -1,5 +1,4 @@
-#NOTE TO DO IS TO ADD BLUEPRITNS SO THIS FILE ISNT A JUNK, BUT RIGHT NOW SPOTIY OAUTH IS KINDA HARD TO ROUTE AND DO THIGNS ON
-
+#NOTE TO DO IS TO ADD BLUEPRINTS SO THIS FILE ISNT A JUNK, BUT RIGHT NOW SPOTIY OAUTH IS KINDA HARD TO ROUTE AND ACT ON
 from flask import Flask, request, url_for, session, redirect, jsonify, render_template
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv
@@ -9,10 +8,9 @@ import spotipy
 import os
 import time
 import json
-import csv
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials= True)
 app.secret_key = "ONcs92894hfnl"
 app.config['SESSION_COOKIE_NAME'] = 'Rickys cookie'
 TOKEN_INFO = "token_info"
@@ -49,20 +47,6 @@ def create_spotify_oath():
         client_secret= client_secret, 
         redirect_uri= url_for('redirectPage', _external = True),
          scope="user-library-read user-top-read user-read-currently-playing user-modify-playback-state playlist-modify-private" )
-
-def json_to_csv(json_data, csv_file_name):
-    csv_file = csv_file_name
-    with open(csv_file_name, mode='w', newline='') as file:
-        # Create a CSV writer
-        writer = csv.writer(file)
-        
-        # Write the header
-        header = json_data[0].keys()
-        writer.writerow(header)
-        
-        # Write the data rows
-        for item in json_data:
-            writer.writerow(item.values())
 
 def parse_query(query):
     params = {}
@@ -165,11 +149,10 @@ def get_album_tracks(album_id):
 # @app.route('/NewReleases')
 # def NewReleases():
 
-#recommendation
-#remove old songs
-#get playlists
-#find duplicates
 
+@app.route('/reacttest')
+def reacttest():
+    return {'data':'a react test' }
 
 @app.route('/')
 def homepage():
@@ -241,6 +224,8 @@ def addSongToQueue():
     sp.add_to_queue(uri = songid)
     return f"Song: {songname} has been added to the queue."
 
+#Song Features
+
 @app.route('/SimilarSongs')
 def SimilarSongs():
     sp = get_spotify()
@@ -303,7 +288,9 @@ def audio_features():
     for track_id in track_ids:
         sp.add_to_queue(track_id)
 
-    json_to_csv(analysis, "./data/audiofeatures.csv")
+    save_file = open("./data/audio_features.json", "w")  
+    json.dump(analysis, save_file, indent = 1)  
+    save_file.close()  
 
     
 
@@ -330,7 +317,10 @@ def get50TopArtists():
         }
         formatted_artists.append(formatted_artist)
 
-    json_to_csv(top_artists, "./data/topTracks.csv")
+    save_file = open("./data/top_artists.json", "w")  
+    json.dump(top_artists, save_file, indent = 1)  
+    save_file.close()  
+
     return jsonify({'data': formatted_artists})
 
 @app.route('/get50TopTracks')
@@ -348,7 +338,10 @@ def get50TopTracks():
         }
         formatted_tracks.append(formatted_track)
 
-    json_to_csv(top_tracks, "./data/topTracks.csv")
+    save_file = open("./data/top_tracks.json", "w")  
+    json.dump(top_tracks, save_file, indent = 1)  
+    save_file.close()  
+
     return jsonify({'data': formatted_tracks})
 
 
