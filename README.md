@@ -1,14 +1,16 @@
 <h1>  </h1>
-YOUR radio station, so you don't have to listen to the same song over and over again
 
-Trained on my personal spotify data first - over 13524 unique songs, 7+ years of listening history, 365+ days time of streaming
-(The json for my personal account data has been hidden for permission reasons)
+Analyzing my personal spotify data first - over 13524 unique songs, 7+ years of listening history, 365+ days time of streaming
+Trained on GTZAN Dataset
 
 <h3>Frontend</h3>
 Swift
 
 <h3>Backend</h3>
 Flask, Firebase, Pandas
+
+<h3>Libraries</h3>
+Librosa, Sklearn, XGBoost, 
 
 # Design
 -Spotify Client Credentials & OAuth 2 Overflow
