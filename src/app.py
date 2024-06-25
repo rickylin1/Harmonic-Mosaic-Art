@@ -273,7 +273,7 @@ def audio_analysis():
     return analysis
 
 
-@app.route('/audio_features')
+@app.route('/')
 def audio_features():
     sp = get_spotify()
     if sp is None:
