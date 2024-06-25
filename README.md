@@ -1,5 +1,8 @@
-<h1> 99.7 NOW </h1>
+<h1>  </h1>
 YOUR radio station, so you don't have to listen to the same song over and over again
+
+Trained on my personal spotify data first - over 13524 unique songs, 7+ years of listening history, 365+ days time of streaming
+(The json for my personal account data has been hidden for permission reasons)
 
 <h3>Frontend</h3>
 Swift
