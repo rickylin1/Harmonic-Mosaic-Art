@@ -23,6 +23,8 @@ Librosa,  Sklearn, Pandas, Seaborn, Matplotlib, Numpy
 # Model 
 - XGBoost gradient classifier trained on GTZAN Dataset using Short-time Fourier transformations, Mel-Frequency Cepstral Coefficients, and Label Encoding
 
+![Example Image](Model/Corr%20Heatmap.jpg)
+
 # Features
 - Reconstruct Album Cover/Artist base image w/ color harmonic images of YOUR choice
 
