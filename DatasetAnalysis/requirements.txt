@@ -1,4 +1,0 @@
-# The 'os' module is part of the Python Standard Library and doesn't need to be installed via pip.
-tensorflow==2.16.1  # Replace with the desired version
-tensorflow_io==0.37.0  # Replace with the desired version
-matplotlib==3.8.4  # Replace with the desired version

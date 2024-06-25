@@ -1,3 +1,6 @@
 src/.env
 data/Spotify Account Data/
 data/ExtendedStreamingHistory
+Model/GTZAN
+Model/tracks
+Model/wavs
