@@ -6,6 +6,7 @@ from spotipy.oauth2 import SpotifyOAuth
 from format import *
 import spotipy
 import os
+import requests
 import time
 import json
 
@@ -145,6 +146,33 @@ def get_album_tracks(album_id):
     tracks = sp.album_tracks(album_id)
     return tracks
 
+def download_image(url, directory):
+    # Create the directory if it doesn't exist
+    os.makedirs(directory, exist_ok=True)
+
+    # Get the file name from the URL
+    file_name = url.split('/')[-1]
+    # Ensure the file name ends with .jpg
+    if not file_name.lower().endswith('.jpg'):
+        file_name += '.jpg'
+
+    file_path = os.path.join(directory, file_name)
+
+    # Download the image
+    with open(file_path, 'wb') as f:
+        response = requests.get(url)
+        f.write(response.content)
+
+    return file_path
+
+
+def download_album_cover(query):
+    sp = get_spotify()
+    album_id = get_album_id(query)
+    print('downloaded')
+    print(sp.album(album_id))
+    return sp.album(album_id)
+
 #POTENTIAL, TAKE AN ARTIST OR ALBUM AND RANDOMLY SHUFFLE SONGS INTO QUEUE??
 # @app.route('/NewReleases')
 # def NewReleases():
@@ -172,6 +200,19 @@ def redirectPage():
     access_token = sp_oauth.get_access_token(code)
     session[TOKEN_INFO] = access_token
     return redirect(url_for('getCurrentTrack', _external = True))
+
+@app.route('/AlbumCoverMosaic')
+def AlbumCoverMosaic():
+    sp = get_spotify()
+    if sp is None:
+        return redirect(url_for("login", _external=True))
+    url = download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
+    directory = 'album_cover'
+    downloaded_file = download_image(url, directory)
+    print(f'Downloaded file: {downloaded_file}')
+    return download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
+
+
 
 #playback features
 @app.route('/Pause')
@@ -343,6 +384,8 @@ def get50TopTracks():
     save_file.close()  
 
     return jsonify({'data': formatted_tracks})
+
+
 
 
 if __name__ == '__main__':
