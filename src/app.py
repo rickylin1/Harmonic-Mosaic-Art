@@ -9,6 +9,11 @@ import os
 import requests
 import time
 import json
+import sys
+sys.path.append('/Users/fluffy/repos/Spotifyapp/Mosaics/ColorHarmonicMosaics')
+
+import MosaicGenerator
+
 
 app = Flask(__name__)
 CORS(app, supports_credentials= True)
@@ -201,14 +206,21 @@ def AlbumCoverMosaic():
     if request.method == 'POST':
         data = request.get_json()
         album_info = data.get('albumName')
-        print(album_info)
+        inputs = MosaicGenerator.get_user_inputs()
+        MosaicGenerator.createMosaic(*inputs)
+        #NOTE still need to fix the directory relatives for the images, right now the terminal is conlicting with my js calls to it
         return {'album_name': album_info}
+    
     if request.method == 'GET':
-        url = download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
-        directory = 'album_cover'
-        downloaded_file = download_image(url, directory)
-        print(f'Downloaded file: {downloaded_file}')
-        return download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
+        return {"mosaic_url": 'https://i.scdn.co/image/ab67616d0000b273715973050587fe3c93033aad',
+                "album_name": "Rodeo"
+                }
+    
+        # url = download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
+        # directory = 'album_cover'
+        # downloaded_file = download_image(url, directory)
+        # print(f'Downloaded file: {downloaded_file}')
+        # return download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
 
 
 #playback features

@@ -102,7 +102,10 @@ def createMosaic(targetFile, tileImageFolder='monochrome', maxTileX=200, maxTile
 
 
 def get_user_inputs():
+    # targetFile = os.path.join('ColorHarmonicMosaics', 'targetFiles', input("Enter the target file path: "))
+
     targetFile = os.path.join('targetFiles', input("Enter the target file path: "))
+    #when in terminal NOTE HAVE TO RUN IT WHEN UR CURR TERMINAL DIRECTORY IS IN THE RIGHT DIRECTORY WHICH IS COLORHARMONICMOSAICS FOR TERMINAL
     print("Choose your mosaic color!")
     print('Feel free to reference Color Picker to get an idea of your color')
     color_r = input('Enter red: ')
