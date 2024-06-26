@@ -31,6 +31,13 @@
     <button id="get50TopTracksButton">get50TopTracks</button>
     <div id="get50TopTracksResult"></div>
 
+    <form id="myForm" onsubmit="AlbumSubmit(); return false;">
+        <label for="textInput">Input Album Name</label>
+        <input type="text" id="albumName" name="textInput">
+        <button type="submit">Submit</button>
+    </form>
+    <div id="AlbumResult"></div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     
 </body>

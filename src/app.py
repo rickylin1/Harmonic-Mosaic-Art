@@ -169,18 +169,10 @@ def download_image(url, directory):
 def download_album_cover(query):
     sp = get_spotify()
     album_id = get_album_id(query)
-    print('downloaded')
-    print(sp.album(album_id))
+    # print('downloaded')
+    # print(sp.album(album_id))
     return sp.album(album_id)
 
-#POTENTIAL, TAKE AN ARTIST OR ALBUM AND RANDOMLY SHUFFLE SONGS INTO QUEUE??
-# @app.route('/NewReleases')
-# def NewReleases():
-
-
-@app.route('/reacttest')
-def reacttest():
-    return {'data':'a react test' }
 
 @app.route('/')
 def homepage():
@@ -201,17 +193,22 @@ def redirectPage():
     session[TOKEN_INFO] = access_token
     return redirect(url_for('getCurrentTrack', _external = True))
 
-@app.route('/AlbumCoverMosaic')
+@app.route('/AlbumCoverMosaic', methods=['GET', 'POST'])
 def AlbumCoverMosaic():
-    sp = get_spotify()
-    if sp is None:
-        return redirect(url_for("login", _external=True))
-    url = download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
-    directory = 'album_cover'
-    downloaded_file = download_image(url, directory)
-    print(f'Downloaded file: {downloaded_file}')
-    return download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
-
+    # sp = get_spotify()
+    # if sp is None:
+    #     return redirect(url_for("login", _external=True))
+    if request.method == 'POST':
+        data = request.get_json()
+        album_info = data.get('albumName')
+        print(album_info)
+        return {'album_name': album_info}
+    if request.method == 'GET':
+        url = download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
+        directory = 'album_cover'
+        downloaded_file = download_image(url, directory)
+        print(f'Downloaded file: {downloaded_file}')
+        return download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
 
 
 #playback features

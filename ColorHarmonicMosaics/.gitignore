@@ -11,3 +11,4 @@
 !*.ipynb
 !.gitignore
 !mosaics
+!targetFiles

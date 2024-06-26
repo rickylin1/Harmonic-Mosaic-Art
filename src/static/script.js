@@ -11,6 +11,28 @@ async function fetchData(url) {
     }
 }
 
+async function postData(url, jsonData) {
+    try {
+        const response = await fetch('/' + url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(jsonData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+    }
+}
+
+
 function addButtonClickListener(buttonId, resultId, action) {
     document.getElementById(buttonId).addEventListener('click', async () => {
         const resultDiv = document.getElementById(resultId);
@@ -42,6 +64,26 @@ function addButtonClickListener(buttonId, resultId, action) {
         }
     });
 }
+
+async function AlbumSubmit() {
+    try{
+    var inputField = document.getElementById("albumName");
+    album = inputField.value
+    inputField.value = ""; // Clear the input field
+
+    const resultDiv = document.getElementById("AlbumResult");
+    let json = {
+        "albumName": album
+    }
+    const data = await postData('AlbumCoverMosaic', json);
+    resultDiv.innerText = data['album_name']
+
+    }
+    catch (error) {
+        console.error('There has been a problem with submitting album name', error);
+    }
+}
+
 
 addButtonClickListener('pauseButton', 'pauseResult', 'Pause');
 addButtonClickListener('resumeButton', 'resumeResult', 'Resume');
