@@ -100,6 +100,8 @@ def createMosaic(targetFile, tileImageFolder='monochrome', maxTileX=200, maxTile
     print("- See `mosaic-hd.jpg` to see your HQ mosaic! (The file may be HUGE.)")
     print("- See `mosaic-web.jpg` to see a mosaic best suited for the web (still big, but not HUGE)!")
 
+    return "SUCCESS MADE THE MOSAIC, here is the url:"
+
 
 def get_user_inputs():
     # targetFile = os.path.join('ColorHarmonicMosaics', 'targetFiles', input("Enter the target file path: "))
@@ -115,6 +117,8 @@ def get_user_inputs():
     tileImageFolder = input("Enter the color group (analogous, complementary, triadic, or default (monochrome)): ") or 'monochrome'
     function_name = f"create_{tileImageFolder}"
     globals()[function_name](color)
+    #this calls ColorCreATOR and creates my folder
+    
     maxTileX = input("Enter the maximum number of tiles in the X direction (default is 200): ")
     maxTileX = int(maxTileX) if maxTileX else 200
     maxTileY = input("Enter the maximum number of tiles in the Y direction (default is 200): ")

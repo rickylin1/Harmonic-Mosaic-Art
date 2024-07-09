@@ -10,9 +10,13 @@ import requests
 import time
 import json
 import sys
+import ColorCreator, MosaicGenerator
+from ColorCreator import create_analogous, create_monochrome, create_single_color_image, create_complementary, create_triadic
+
 sys.path.append('/Users/fluffy/repos/Spotifyapp/Mosaics/ColorHarmonicMosaics')
 
 import MosaicGenerator
+import albumCover
 
 
 app = Flask(__name__)
@@ -172,10 +176,13 @@ def download_image(url, directory):
 
 
 def download_album_cover(query):
-    sp = get_spotify()
+    # sp = get_spotify()
+    # if sp is None:
+    #     return redirect(url_for("login", _external=True))
     album_id = get_album_id(query)
     # print('downloaded')
     # print(sp.album(album_id))
+    return 'test'
     return sp.album(album_id)
 
 
@@ -199,17 +206,42 @@ def redirectPage():
     return redirect(url_for('getCurrentTrack', _external = True))
 
 @app.route('/AlbumCoverMosaic', methods=['GET', 'POST'])
-def AlbumCoverMosaic():
+def AlbumCoverMosaic(): 
     # sp = get_spotify()
     # if sp is None:
     #     return redirect(url_for("login", _external=True))
     if request.method == 'POST':
-        data = request.get_json()
-        album_info = data.get('albumName')
-        inputs = MosaicGenerator.get_user_inputs()
-        MosaicGenerator.createMosaic(*inputs)
-        #NOTE still need to fix the directory relatives for the images, right now the terminal is conlicting with my js calls to it
-        return {'album_name': album_info}
+        try:
+            data = request.get_json()
+            album_info = albumCover.AlbumCover(data['albumName'], data['artist'], data['red'], data['green'], data['blue'], data['colorGroup'], data['xTiles'], data['yTiles'])
+            print(album_info)
+            print(album_info.album_name + album_info.artist)
+            color = (data['red'], data['green'], data['blue'])
+            print(color)
+            tileImageFolder = data["colorGroup"]
+            function_name = f"create_{tileImageFolder}"
+
+            if function_name in globals() and callable(globals()[function_name]):
+                globals()[function_name](color)
+            else:
+                raise ValueError(f"Function {function_name} not found or not callable.")
+
+            mosaic_url = MosaicGenerator.createMosaic("album_cover/Graduation.jpeg", data['colorGroup'], data['xTiles'], data['yTiles'])
+            
+            print(mosaic_url)
+            # print(download_album_cover(album_info.album_name + album_info.artist))
+
+            response_data = {
+                "mosaicURL": album_info.album_name
+            }
+            
+            return jsonify(response_data), 200
+    
+
+        except Exception as e:
+            print(f"Error generating mosaic: {str(e)}")
+            return jsonify({"error": "Error generating mosaic"}), 500
+
     
     if request.method == 'GET':
         return {"mosaic_url": 'https://i.scdn.co/image/ab67616d0000b273715973050587fe3c93033aad',
