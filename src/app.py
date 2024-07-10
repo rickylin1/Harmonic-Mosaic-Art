@@ -1,5 +1,5 @@
 #NOTE TO DO IS TO ADD BLUEPRINTS SO THIS FILE ISNT A JUNK, BUT RIGHT NOW SPOTIY OAUTH IS KINDA HARD TO ROUTE AND ACT ON
-from flask import Flask, request, url_for, session, redirect, jsonify, render_template
+from flask import Flask, request, url_for, session, redirect, jsonify, render_template, send_from_directory
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyOAuth
@@ -205,6 +205,13 @@ def redirectPage():
     session[TOKEN_INFO] = access_token
     return redirect(url_for('getCurrentTrack', _external = True))
 
+
+@app.route('/mosaics/<filename>')
+def serve_image(filename):
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    IMAGE_DIR = os.path.join(PROJECT_ROOT, 'mosaics')   
+    return send_from_directory(IMAGE_DIR, filename)
+
 @app.route('/AlbumCoverMosaic', methods=['GET', 'POST'])
 def AlbumCoverMosaic(): 
     # sp = get_spotify()
@@ -217,7 +224,6 @@ def AlbumCoverMosaic():
             print(album_info)
             print(album_info.album_name + album_info.artist)
             color = (data['red'], data['green'], data['blue'])
-            print(color)
             tileImageFolder = data["colorGroup"]
             function_name = f"create_{tileImageFolder}"
 
@@ -227,12 +233,12 @@ def AlbumCoverMosaic():
                 raise ValueError(f"Function {function_name} not found or not callable.")
 
             mosaic_url = MosaicGenerator.createMosaic("album_cover/Graduation.jpeg", data['colorGroup'], data['xTiles'], data['yTiles'])
-            
-            print(mosaic_url)
             # print(download_album_cover(album_info.album_name + album_info.artist))
 
             response_data = {
-                "mosaicURL": album_info.album_name
+                "mosaicUrl": mosaic_url,
+                "albumName": album_info.album_name,
+                "artistName": album_info.artist
             }
             
             return jsonify(response_data), 200
