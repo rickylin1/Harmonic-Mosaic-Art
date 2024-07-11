@@ -3,6 +3,7 @@ from flask import Flask, request, url_for, session, redirect, jsonify, render_te
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyOAuth
+from spotipy import Spotify
 from format import *
 import spotipy
 import os
@@ -182,7 +183,6 @@ def download_album_cover(query):
     album_id = get_album_id(query)
     # print('downloaded')
     # print(sp.album(album_id))
-    return 'test'
     return sp.album(album_id)
 
 
@@ -220,9 +220,46 @@ def AlbumCoverMosaic():
     if request.method == 'POST':
         try:
             data = request.get_json()
+            print("the access token is" + data['accessToken'])
+            access_token = data['accessToken']
+
+            # Initialize Spotipy client with the access token
+            sp = Spotify(auth=access_token)
+
+            # Example: Pause current playback
+            sp.pause_playback()
+
             album_info = albumCover.AlbumCover(data['albumName'], data['artist'], data['red'], data['green'], data['blue'], data['colorGroup'], data['xTiles'], data['yTiles'])
-            print(album_info)
-            print(album_info.album_name + album_info.artist)
+            album_query = album_info.album_name + " " + album_info.artist
+            results = sp.search(q=album_query, limit=1, type='album')
+            album_id = results['albums']['items'][0]['id']
+            album = sp.album(album_id)
+            album_image_url = album['images'][0]['url']
+            print(album_image_url)
+
+            directory = "album_cover"
+            # Name of the image file
+            filename = "cover.jpeg"
+
+            # Create the directory if it doesn't exist
+            os.makedirs(directory, exist_ok=True)
+
+            # Path to save the image
+            filepath = os.path.join(directory, filename)
+
+            # Send a GET request to the URL
+            response = requests.get(album_image_url)
+
+            # Check if the request was successful
+            if response.status_code == 200:
+                # Open the file and write the image content
+                with open(filepath, 'wb') as f:
+                    f.write(response.content)
+                print(f"Image downloaded and saved as {filename} in {directory}.")
+            else:
+                print("Failed to download image.")
+
+
             color = (data['red'], data['green'], data['blue'])
             tileImageFolder = data["colorGroup"]
             function_name = f"create_{tileImageFolder}"
@@ -232,7 +269,7 @@ def AlbumCoverMosaic():
             else:
                 raise ValueError(f"Function {function_name} not found or not callable.")
 
-            mosaic_url = MosaicGenerator.createMosaic("album_cover/Graduation.jpeg", data['colorGroup'], data['xTiles'], data['yTiles'])
+            mosaic_url = MosaicGenerator.createMosaic("album_cover/cover.jpeg", data['colorGroup'], data['xTiles'], data['yTiles'])
             # print(download_album_cover(album_info.album_name + album_info.artist))
 
             response_data = {
@@ -240,6 +277,7 @@ def AlbumCoverMosaic():
                 "albumName": album_info.album_name,
                 "artistName": album_info.artist
             }
+
             
             return jsonify(response_data), 200
     
@@ -254,11 +292,6 @@ def AlbumCoverMosaic():
                 "album_name": "Rodeo"
                 }
     
-        # url = download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
-        # directory = 'album_cover'
-        # downloaded_file = download_image(url, directory)
-        # print(f'Downloaded file: {downloaded_file}')
-        # return download_album_cover('album%3ARodeo%20artist%3ATravis%20Scott')['images'][0]['url']
 
 
 #playback features
